@@ -1,6 +1,8 @@
 import random
-true = True
-false = False
+import pyperclip
+
+# true = True
+# false = False
 
 health = 10
 trinkets = 0
@@ -19,27 +21,45 @@ def run():
 
 def enemy():
     global health, trinkets
-    print("an enemy approaches!")
-    if input("fight or try to run?\n(fight/run) > ").lower() == "fight":
+    prompt = ["an enemy approaches!"]
+    prompt.append("fight or try to run?\n(fight/run) > ")
+    pyperclip.copy('\n'.join(prompt))
+    print('\n'.join(prompt), end='')
+    if input().lower() == "fight":
+        prompt = []
         lim = random.randint(10, 100)
         enemy_num = random.randint(1, lim)
-        print(f"the number is from 1 to {lim}, inclusive")
+        prompt.append(f"the number is from 1 to {lim}, inclusive")
         while health > 0:
-            print(f"hp: {health}")
-            choice = input("guess [integer], [use] trinket of halving, or [run] > ").lower()
+            prompt = []
+            prompt.append(f"health points: {health}")
+            prompt.append(f"trinkets left: {trinkets}")
+            prompt.append("options:")
+            prompt.append(f"\tguess an integer [0-{lim}]")
+            prompt.append("\tuse a trinket of halving [use]")
+            prompt.append("\trun from fight [run]")
+            pyperclip.copy('\n'.join(prompt))
+            print('\n'.join(prompt), end='')
+            choice = input().lower()
             if choice == "run":
                 run()
                 return
             elif choice == "use":
                 if trinkets > 0:
-                    print("you used a trinket!")
+                    prompt = []
+                    prompt.append("you used a trinket!")
                     enemy_num //= 2
                     trinkets -= 1
-                    print(f"enemy num is now from 0 to {lim//2}")
+                    prompt.append(f"enemy num is now from 0 to {lim//2}")
+                    pyperclip.copy('\n'.join(prompt))
+                    print('\n'.join(prompt), end='')
                     continue
                 else:
-                    print("out of trinkets :D the enemy did 1 damage")
+                    prompt = []
+                    prompt.append("out of trinkets :D the enemy did 1 damage")
                     health -= 1
+                    pyperclip.copy('\n'.join(prompt))
+                    print('\n'.join(prompt), end='')
                     continue
             elif choice.isdigit():
                 guess = int(choice)
