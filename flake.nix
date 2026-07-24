@@ -13,7 +13,9 @@
   {
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [
-        python314
+        (python314.withPackages(p: with p; [
+          pyperclip
+        ]))
         ty
         ruff
       ];
