@@ -73,12 +73,12 @@ def encounter(state: dict, ec: int):
     while state["health"] > 0:
         print(f"enemy count: {ec}\nhp: {state["health"]}\nkill streak: {state["streak"]}\ntrinkets: {state["trinkets"]}")
         print("enter one of the following:")
-        print("\tuse (to use a trinket of halving)")
-        print("\trun (to run from the fight)")
-        print("\tguess <n> (where n is any integer)")
-        player_input = input("\u21aa ").strip().lower()
+        print("|\tuse (to use a trinket of halving)")
+        print("|\trun (to run from the fight)")
+        print("|\tguess <n> (where n is any integer)")
+        player_input = input("+- ").strip().lower()
         match player_input.split():
-            case ["guess", n] if re.fullmatch(INTEGER_PATTERN, n):
+            case ["guess", n] | [n] if re.fullmatch(INTEGER_PATTERN, n):
                 guess = int(n)
                 if guess > enemy.number:
                     print("too high! -1 hp :O")
@@ -101,12 +101,12 @@ def encounter(state: dict, ec: int):
                     print("you live to run another day. coward. :/")
                     should_reward = random.randint(0,2)
                     match should_reward:
-                        case 0:
+                        case 0 if state["health"] < 10:
                             hp_up = random.randint(1,3)
                             print("you managed to grab and eat some berries on the way out")
                             print(f"+{hp_up}hp")
                             state["health"] += hp_up
-                        case 1:
+                        case 1 if state["health"] < 5:
                             print("woah, you got imbued with the cowards blessing")
                             print("2x hp")
                             state["health"] *= 2
@@ -145,7 +145,7 @@ def main():
         "secret": random.randint(0, 99),
     }
     print(end="are you ready to go integer dungeon? o_O\n(Y/n) > ")
-    sleep(2)
+    input()
     print("\nwell I don't care! you're going regardless! >:]")
     enemy_count = enemies[state["rank"]][0]
     while state["health"] > 0:
