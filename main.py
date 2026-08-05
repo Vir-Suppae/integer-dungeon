@@ -5,32 +5,73 @@ import re
 INTEGER_PATTERN = r"[\-\+]?\d+"
 
 class Enemy:
-    def __init__(self, article, printable_name: str, bounds: dict[str, int]):
+    def __init__(self, article, printable_name: str, flavor_text: str,  bounds: dict[str, int]):
         self.article = article
         self.printable_name = printable_name
         self.lowerbounds = bounds.get("lower", 0)
         self.upperbounds = bounds.get("upper", 1004)
         self.number = random.randint(self.lowerbounds,self.upperbounds)
+        self.flavor_text = flavor_text
 
     def __str__(self):
         return self.printable_name
 
 class Golbin(Enemy):
     def __init__(self):
-        super().__init__("a", "golbin", {"lower": 0, "upper": 100})
+        super().__init__("a", "golbin", 'the golbin looks at you with a look of disgust\n"you think you know numbers? you probably don\'t even know what a transcendental is. hah."', {"lower": 0, "upper": 100})
 
-enemies: list[list[type[Enemy]]] = [
-    [
-        Golbin,
-    ],
+class HomelessMan(Enemy):
+    def __init__(self):
+        super().__init__("a", "homeless man", 'he looks at you with bleary eyes\n"where am I? can you help me?"', {"lower": -3, "upper": 46})
+
+class Homunculus(Enemy):
+    def __init__(self):
+        super().__init__("a", "homunculus", 'the homunculus looks at you with sad human-looking eyes\nit is silent', {"lower": 0, "upper": 3})
+
+class Spooder(Enemy):
+    def __init__(self):
+        super().__init__("a", "spooder", 'the spider is huge!\n"is the metal thing tasty? I hope it is tasty. it looks like a metal human fehfehfehch"',{"lower": -200, "upper": 150})
+
+class Boblin(Enemy):
+    def __init__(self):
+        super().__init__("a", "boblin", 'the boblin is identical to a golbin, except for the yellow eyes\n"I don\'t even like numbers! can\'w we do a spelling be or something?"', {"lower": 0, "upper": 200})
+
+class Zombie(Enemy):
+    def __init__(self):
+        super().__init__("a", "zombie", 'it\'s bones are exposed in some places\n"gehhhhh"', {"lower": 0, "upper": 10})
+
+class Vampire(Enemy):
+    def __init__(self):
+        super().__init__("a", "vampire", 'he is well-dressed\n"you don\'t have any blood-born diseases do you?"',{"lower": 100, "upper": 300})
+
+enemies: list[tuple[int,list[type[Enemy]]]] = [
+    (
+        10,
+        [
+            Golbin,
+            HomelessMan,
+            Homunculus,
+            Spooder,
+        ]
+    ),
+    (
+        15,
+        [
+            Boblin,
+            Zombie,
+            Vampire,
+            Spooder,
+        ]
+    ),
 ]
 
-def encounter(state: dict):
-    enemy: Enemy = random.choice(enemies[state["rank"]])()
+def encounter(state: dict, ec: int):
+    enemy: Enemy = random.choice(enemies[state["rank"]][1])()
     print(f"you encountered {enemy.article} {enemy}!")
+    print(f"{enemy.flavor_text}")
     print(f"the {enemy} has chosen a number from {enemy.lowerbounds}-{enemy.upperbounds}")
     while state["health"] > 0:
-        print(f"hp: {state["health"]}\nkill streak: {state["streak"]}\ntrinkets: {state["trinkets"]}")
+        print(f"enemy count: {ec}\nhp: {state["health"]}\nkill streak: {state["streak"]}\ntrinkets: {state["trinkets"]}")
         print("enter one of the following:")
         print("\tuse (to use a trinket of halving)")
         print("\trun (to run from the fight)")
@@ -48,14 +89,13 @@ def encounter(state: dict):
                 else:
                     print(f"you killed 'em! +{state["bonus hp"]} hp :]")
                     state["health"] += state["bonus hp"]
-                    state["enemy_count"] -= 1
                     state["streak"] += 1
                     if state["streak"] % 3 == 0 and state["streak"] > 0:
                         state["bonus hp"] += 1
                     if random.randint(0,5) == 0:
                         print("you got a trinket! :D")
                         state["trinkets"] += 1
-                    return
+                    return -1
             case ["run"]:
                 if random.randint(0, 4) != 0:
                     print("you live to run another day. coward. :/")
@@ -87,6 +127,8 @@ def encounter(state: dict):
                     print("you haven't a trinket! :/")
                     print(f"the {enemy} attacks! -1 hp :[")
                     state["health"] -= 1
+            case []:
+                pass
             case _:
                 dmg = random.randint(1,5)
                 print(f"WRONG ANSWER YOU FOOL! -{dmg} hp! >:(")
@@ -97,17 +139,20 @@ def main():
     state = {
         "health": 10,
         "trinkets": 0,
-        "enemy_count": 10,
         "streak": 0,
         "bonus hp": 1,
         "rank": 0,
         "secret": random.randint(0, 99),
     }
-    print(end="are \x1b[97myou\x1b[39m ready to go \x1b[33minteger dungeon\x1b[39m? \x1b[95mo_O\n\x1b[36m(Y/n) \x1b[39m> ")
+    print(end="are you ready to go integer dungeon? o_O\n(Y/n) > ")
     sleep(2)
     print("\nwell I don't care! you're going regardless! >:]")
-    while state["enemy_count"] > 0 and state["health"] > 0:
-        encounter(state)
+    enemy_count = enemies[state["rank"]][0]
+    while state["health"] > 0:
+        result = encounter(state, enemy_count)
+        enemy_count += result if result is not None else 0
+        if enemy_count <= 0 and len(enemies) > state["rank"] + 1:
+            state["rank"] += 1
     print("you win! :D" if state["health"] > 0 else "YOU LOSE HAHAHAHA >:D")
 
 if __name__ == "__main__":
