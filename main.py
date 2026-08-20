@@ -1,4 +1,3 @@
-from time import sleep
 import random
 import re
 
@@ -30,11 +29,11 @@ class Homunculus(Enemy):
 
 class Spooder(Enemy):
     def __init__(self):
-        super().__init__("a", "spooder", 'the spider is huge!\n"is the metal thing tasty? I hope it is tasty. it looks like a metal human fehfehfehch"',{"lower": -200, "upper": 150})
+        super().__init__("a", "spooder", 'the spooder is huge!\n"is the metal thing tasty? I hope it is tasty. it looks like a metal human fehfehfehch"',{"lower": -200, "upper": 150})
 
 class Boblin(Enemy):
     def __init__(self):
-        super().__init__("a", "boblin", 'the boblin is identical to a golbin, except for the yellow eyes\n"I don\'t even like numbers! can\'w we do a spelling be or something?"', {"lower": 0, "upper": 200})
+        super().__init__("a", "boblin", 'the boblin is identical to a golbin, except for the yellow eyes\n"I don\'t even like numbers! can\'t we do a spelling bee or something?"', {"lower": 0, "upper": 200})
 
 class Zombie(Enemy):
     def __init__(self):
@@ -71,21 +70,37 @@ def encounter(state: dict, ec: int):
     print(f"{enemy.flavor_text}")
     print(f"the {enemy} has chosen a number from {enemy.lowerbounds}-{enemy.upperbounds}")
     while state["health"] > 0:
-        print(f"enemy count: {ec}\nhp: {state["health"]}\nkill streak: {state["streak"]}\ntrinkets: {state["trinkets"]}")
+        print(f"enemy count: {ec}\nhp: \x1b[{"91" if state["health"] < 3 else "93" if state["health"] < 7 else "0"}m{state["health"]}\x1b[0m\nkill streak: {state["streak"]}\ntrinkets: \x1b[{"0" if state["trinkets"] <= 0 else "95"}m{state["trinkets"]}\x1b[0m")
         print("enter one of the following:")
-        print("|\tuse (to use a trinket of halving)")
+        if state["trinkets"] > 0:
+            print("|\tuse (to use a trinket of halving)")
         print("|\trun (to run from the fight)")
-        print("|\tguess <n> (where n is any integer)")
+        print("|\tguess NUMBER")
         player_input = input("+- ").strip().lower()
         match player_input.split():
             case ["guess", n] | [n] if re.fullmatch(INTEGER_PATTERN, n):
                 guess = int(n)
+                enemyDamage = random.randint(1, 5)
                 if guess > enemy.number:
-                    print("too high! -1 hp :O")
-                    state["health"] -= 1
+                    toPrint = "too high!"
+                    if state["previous side"] == 0 and random.randint(0,3) == 0:
+                        state["health"] -= enemyDamage
+                        toPrint += f" -{enemyDamage} hp :O"
+                    elif state["previous side"] == 1 and random.randint(0,1) == 0:
+                        state["health"] -= enemyDamage
+                        toPrint += f" -{enemyDamage} hp :O"
+                    state["previous side"] = 1
+                    print(toPrint)
                 elif guess < enemy.number:
-                    print("too low! -1 hp :[")
-                    state["health"] -= 1
+                    toPrint="too low!"
+                    if state["previous side"] == 1 and random.randint(0,3) == 0:
+                        state["health"] -= enemyDamage
+                        toPrint += f" -{enemyDamage} hp :O"
+                    elif state["previous side"] == 0 and random.randint(0,1) == 0:
+                        state["health"] -= enemyDamage
+                        toPrint += f" -{enemyDamage} hp :O"
+                    state["previous side"] = 0
+                    print(toPrint)
                 else:
                     print(f"you killed 'em! +{state["bonus hp"]} hp :]")
                     state["health"] += state["bonus hp"]
@@ -130,7 +145,8 @@ def encounter(state: dict, ec: int):
             case []:
                 pass
             case _:
-                dmg = random.randint(1,5)
+                state["invalid inputs"] += 1
+                dmg = random.randint(1,state["invalid inputs"])
                 print(f"WRONG ANSWER YOU FOOL! -{dmg} hp! >:(")
                 state["health"] -= dmg
             
@@ -143,6 +159,8 @@ def main():
         "bonus hp": 1,
         "rank": 0,
         "secret": random.randint(0, 99),
+        "previous side": 2,
+        "invalid inputs": 0,
     }
     print(end="are you ready to go integer dungeon? o_O\n(Y/n) > ")
     input()
@@ -153,6 +171,9 @@ def main():
         enemy_count += result if result is not None else 0
         if enemy_count <= 0 and len(enemies) > state["rank"] + 1:
             state["rank"] += 1
+            enemy_count = enemies[state["rank"]][0]
+        elif enemy_count <= 0:
+            break
     print("you win! :D" if state["health"] > 0 else "YOU LOSE HAHAHAHA >:D")
 
 if __name__ == "__main__":
