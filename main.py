@@ -162,9 +162,9 @@ def main():
         "previous side": 2,
         "invalid inputs": 0,
     }
-    print(end="are you ready to go integer dungeon? o_O\n(Y/n) > ")
-    input()
-    print("\nwell I don't care! you're going regardless! >:]")
+    print("are you ready to go integer dungeon? o_O")
+    input("(Y/n) > ")
+    print("well I don't care! you're going regardless! >:]")
     enemy_count = enemies[state["rank"]][0]
     while state["health"] > 0:
         result = encounter(state, enemy_count)
