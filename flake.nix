@@ -1,5 +1,5 @@
 {
-  description = "snowgen dev flake";
+  description = "integer-dungeon dev flake";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -13,9 +13,7 @@
   {
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [
-        (python314.withPackages(p: with p; [
-          pyperclip
-        ]))
+        python314
         ty
         ruff
       ];
